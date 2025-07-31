@@ -274,9 +274,19 @@ export default function EnvironmentDashboard() {
 
                   <div className="pt-4 border-t border-gray-100">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
-                        Updated {new Date(env.updatedAt).toLocaleDateString()}
-                      </span>
+                      <div className={"flex-col"}>
+                      <div className="text-xs text-gray-500 font-bold mb-2">
+                        Updated Date {new Date(env.updatedAt).toLocaleDateString()}
+                      </div>
+                      <div className="text-xs text-gray-500 font-bold">
+                        Updated Time {new Date(env.updatedAt).toLocaleTimeString('en-us', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: true,
+                      })}
+                      </div>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
