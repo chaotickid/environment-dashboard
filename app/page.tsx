@@ -188,7 +188,7 @@ export default function EnvironmentDashboard() {
               </div>
               <div>
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                  Environment Dashboard
+                  Envault
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center space-x-2">
                   <Sparkles className="h-4 w-4" />
