@@ -192,7 +192,7 @@ export default function EnvironmentDashboard() {
                 </h1>
                 <p className="text-gray-600 mt-2 flex items-center space-x-2">
                   <Sparkles className="h-4 w-4" />
-                  <span>Manage your environments</span>
+                  <span>Manage your environments- Developed by Aditya Patil</span>
                 </p>
               </div>
             </div>
