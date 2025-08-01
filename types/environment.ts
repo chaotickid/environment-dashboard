@@ -2,11 +2,13 @@ export interface Environment {
   id: string
   name: string
   status: "active" | "inactive" | "maintenance"
-  environmentLogin: {
+  environmentLogin: Array<{
+    // Changed to array
+    label: string // Added label
     url: string
     id: string
     password: string
-  }
+  }>
   couchbase: {
     url: string
     id: string
@@ -14,10 +16,9 @@ export interface Environment {
   }
   jenkins: {
     pipelineUrl: string
-    // Removed jobName
   }
   helmChartPath: string
-  helmUpgradeCommand: string // Added new field
+  helmUpgradeCommand: string
   createdAt: string
   updatedAt: string
 }

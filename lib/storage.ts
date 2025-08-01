@@ -2,12 +2,68 @@ import type { Environment } from "@/types/environment"
 
 const STORAGE_KEY = "environments_data"
 
+// Helper function to normalize environmentLogin to an array
+const normalizeEnvironmentLogin = (env: any): Environment => {
+  let normalizedLogins: Array<{ label: string; url: string; id: string; password: string }> = []
+
+  if (env.environmentLogin) {
+    if (Array.isArray(env.environmentLogin)) {
+      normalizedLogins = env.environmentLogin.map((login: any) => ({
+        label: login.label || "",
+        url: login.url || "",
+        id: login.id || "",
+        password: login.password || "",
+      }))
+    } else if (typeof env.environmentLogin === "object" && env.environmentLogin !== null) {
+      // If it's a single object (old schema), convert it to an array containing that object
+      normalizedLogins = [
+        {
+          label: env.environmentLogin.label || "",
+          url: env.environmentLogin.url || "",
+          id: env.environmentLogin.id || "",
+          password: env.environmentLogin.password || "",
+        },
+      ]
+    }
+  }
+
+  // If we still don't have any logins, add a default one
+  if (normalizedLogins.length === 0) {
+    normalizedLogins = [{ label: "", url: "", id: "", password: "" }]
+  }
+
+  return {
+    id: env.id || crypto.randomUUID(),
+    name: env.name || "",
+    status: env.status || "active",
+    environmentLogin: normalizedLogins,
+    couchbase: {
+      url: env.couchbase?.url || "",
+      id: env.couchbase?.id || "sysadmin",
+      password: env.couchbase?.password || "Crd!@Mav123",
+    },
+    jenkins: {
+      pipelineUrl: env.jenkins?.pipelineUrl || "",
+    },
+    helmChartPath: env.helmChartPath || "",
+    helmUpgradeCommand: env.helmUpgradeCommand || "",
+    createdAt: env.createdAt || new Date().toISOString(),
+    updatedAt: env.updatedAt || new Date().toISOString(),
+  }
+}
+
 export const storageService = {
   // Get all environments from localStorage
   getEnvironments(): Environment[] {
     try {
       const data = localStorage.getItem(STORAGE_KEY)
-      return data ? JSON.parse(data) : []
+      if (!data) return []
+
+      const rawEnvironments = JSON.parse(data)
+      if (!Array.isArray(rawEnvironments)) return []
+
+      // Normalize all environments to ensure they have the correct structure
+      return rawEnvironments.map(normalizeEnvironmentLogin)
     } catch (error) {
       console.error("Error reading environments from localStorage:", error)
       return []
@@ -26,7 +82,8 @@ export const storageService = {
   // Add new environment
   addEnvironment(environment: Environment): void {
     const environments = this.getEnvironments()
-    environments.push(environment)
+    const normalizedEnvironment = normalizeEnvironmentLogin(environment)
+    environments.push(normalizedEnvironment)
     this.saveEnvironments(environments)
   },
 
@@ -35,7 +92,8 @@ export const storageService = {
     const environments = this.getEnvironments()
     const index = environments.findIndex((env) => env.id === updatedEnvironment.id)
     if (index !== -1) {
-      environments[index] = updatedEnvironment
+      const normalizedEnvironment = normalizeEnvironmentLogin(updatedEnvironment)
+      environments[index] = normalizedEnvironment
       this.saveEnvironments(environments)
     }
   },
@@ -83,12 +141,11 @@ export const storageService = {
             throw new Error("Invalid JSON format: Expected an array of environments.")
           }
 
-          // Optional: More robust validation for each environment object
-          // For simplicity, we'll assume the structure is correct if it's an array.
-          // You might want to add checks for required fields here.
+          // Normalize all uploaded environments
+          const normalizedData = parsedData.map(normalizeEnvironmentLogin)
 
-          this.saveEnvironments(parsedData) // Save to localStorage immediately
-          resolve(parsedData)
+          this.saveEnvironments(normalizedData) // Save to localStorage immediately
+          resolve(normalizedData)
         } catch (error) {
           console.error("Error parsing uploaded JSON file:", error)
           reject(new Error("Failed to parse JSON file. Please ensure it's a valid format."))
